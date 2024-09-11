@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typing Speed Tester</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+    .container {
+      text-align: center;
+      background: white;
+      padding: 20px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+    #text {
+      margin-bottom: 20px;
+      font-size: 18px;
+      background-color: #f1f1f1;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    #inputArea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .stats {
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #aaa;
+    }
+    select {
+      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Typing Speed Tester</h2>
+
+    <select id="difficulty">
+      <option value="easy">Easy</option>
+      <option value="medium">Medium</option>
+      <option value="hard">Hard</option>
+    </select>
+
+    <div id="text"></div>
+
+    <textarea id="inputArea" placeholder="Start typing here..." disabled></textarea>
+
+    <div class="stats">
+      <p>Time: <span id="time">0</span> seconds</p>
+      <p>WPM: <span id="wpm">0</span></p>
+      <p>Accuracy: <span id="accuracy">0</span>%</p>
+    </div>
+
+    <button id="startBtn">Start Test</button>
+    <button id="resetBtn" disabled>Reset</button>
+  </div>
+
+  <script>
+    const easyTexts = [
+      "The quick brown fox jumps over the lazy dog.",
+      "Typing fast is a fun skill to have."
+    ];
+    const mediumTexts = [
+      "The advancement of technology is impressive and growing faster.",
+      "With consistent practice, you can improve your typing speed significantly."
+    ];
+    const hardTexts = [
+      "Programming languages like JavaScript require attention to detail and practice.",
+      "In web development, understanding how HTML, CSS, and JavaScript work together is crucial."
+    ];
+
+    let selectedText = "";
+    let startTime, interval;
+    let timer = 0;
+    let isTestRunning = false;
+
+    const textElement = document.getElementById("text");
+    const inputArea = document.getElementById("inputArea");
+    const timeElement = document.getElementById("time");
+    const wpmElement = document.getElementById("wpm");
+    const accuracyElement = document.getElementById("accuracy");
+    const startBtn = document.getElementById("startBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const difficultySelect = document.getElementById("difficulty");
+
+    function getTextByDifficulty(difficulty) {
+      switch (difficulty) {
+        case 'medium':
+          return mediumTexts[Math.floor(Math.random() * mediumTexts.length)];
+        case 'hard':
+          return hardTexts[Math.floor(Math.random() * hardTexts.length)];
+        default:
+          return easyTexts[Math.floor(Math.random() * easyTexts.length)];
+      }
+    }
+
+    function startTest() {
+      selectedText = getTextByDifficulty(difficultySelect.value);
+      textElement.textContent = selectedText;
+      inputArea.value = "";
+      inputArea.disabled = false;
+      inputArea.focus();
+
+      timer = 0;
+      isTestRunning = true;
+      startTime = new Date().getTime();
+      interval = setInterval(updateTime, 1000);
+      
+      startBtn.disabled = true;
+      resetBtn.disabled = false;
+    }
+
+    function updateTime() {
+      timer++;
+      timeElement.textContent = timer;
+      calculateWPMAndAccuracy();
+    }
+
+    function calculateWPMAndAccuracy() {
+      const inputText = inputArea.value;
+      const wordsTyped = inputText.trim().split(/\s+/).length;
+      const wpm = Math.round((wordsTyped / timer) * 60);
+      wpmElement.textContent = wpm > 0 ? wpm : 0;
+
+      let correctChars = 0;
+      const inputLength = inputText.length;
+      for (let i = 0; i < inputLength; i++) {
+        if (inputText[i] === selectedText[i]) correctChars++;
+      }
+      const accuracy = Math.round((correctChars / inputLength) * 100);
+      accuracyElement.textContent = inputLength > 0 ? accuracy : 0;
+    }
+
+    function endTest() {
+      clearInterval(interval);
+      inputArea.disabled = true;
+      isTestRunning = false;
+      calculateWPMAndAccuracy();
+    }
+
+    function resetTest() {
+      clearInterval(interval);
+      timer = 0;
+      timeElement.textContent = "0";
+      wpmElement.textContent = "0";
+      accuracyElement.textContent = "0";
+      inputArea.value = "";
+      inputArea.disabled = true;
+      textElement.textContent = "";
+      isTestRunning = false;
+      startBtn.disabled = false;
+      resetBtn.disabled = true;
+    }
+
+    inputArea.addEventListener("input", () => {
+      if (inputArea.value === selectedText) {
+        endTest();
+      }
+    });
+
+    startBtn.addEventListener("click", startTest);
+    resetBtn.addEventListener("click", resetTest);
+  </script>
+</body>
+</html>
