@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Matching Game</title>
+    <style>
+        /* General Body and Layout */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #b5b4d5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            letter-spacing: 1.5px;
+        }
+
+        /* Main Container */
+        .main-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+            box-sizing: border-box;
+            gap: 20px;
+        }
+
+        /* Button Styles */
+        .buttons-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .buttons-container button {
+            margin: 5px 0;
+            padding: 15px 30px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 220px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+        }
+
+        /* Hover Effect */
+        .buttons-container button:hover {
+            background-color: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Active (Pressed) Effect */
+        .buttons-container button:active {
+            transform: translateY(1px);
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            background-color: #1f5a7a;
+        }
+
+        /* Focused Button (Keyboard Navigation) */
+        .buttons-container button:focus {
+            outline: none;
+            box-shadow: 0px 0px 0px 3px rgba(52, 152, 219, 0.5);
+        }
+
+        /* Dark Mode Styling */
+.dark-mode {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+}
+
+.dark-mode h1 {
+    color: #ecf0f1;
+}
+
+.dark-mode .buttons-container button {
+    background-color: #6588ab;
+    color: #ffffff;
+}
+
+.dark-mode .buttons-container button:hover {
+    background-color: #2c3e50;
+}
+
+.dark-mode .game-container .card {
+    background-color: transparent;
+}
+
+.dark-mode .card .front {
+    background-color: #396998;
+    color: #ecf0f1;
+}
+
+.dark-mode .card .back {
+    background-color: #5e94cb;
+}
+
+.dark-mode .card.matched {
+    background-color: #27ae60;
+    color: white;
+}
+
+.dark-mode .stats-container {
+    background-color: #34495e;
+    color: #ecf0f1; /* Default white-ish color for stats container */
+}
+
+.dark-mode .stats-container p {
+    font-size: 18px;
+    margin: 10px 0;
+    color: #ffffff; /* Ensure text is white in dark mode */
+}
+
+.dark-mode .stats-container p span {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #ffffff; /* Ensure highlighted text is also white in dark mode */
+}
+
+.dark-mode .player-turn {
+    padding: 10px;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: bold;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark-mode .player1-turn {
+    background-color: #007bff;
+    color: white;
+}
+
+.dark-mode .player2-turn {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.dark-mode .player-info .player-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.dark-mode .player-info .player-score {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+}
+        
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .buttons-container button {
+                padding: 12px 25px;
+                font-size: 14px;
+                max-width: 200px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .buttons-container button {
+                padding: 10px 20px;
+                font-size: 12px;
+                max-width: 180px;
+            }
+        }
+
+        /* Game Container */
+        .game-container {
+            flex: 2;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 10px;
+            justify-items: center;
+            max-width: 600px;
+            perspective: 1000px;
+        }
+
+        /* Card Styles */
+        .card {
+            width: 100px;
+            height: 100px;
+            background-color: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            cursor: pointer;
+            border-radius: 8px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s ease-in-out;
+        }
+
+        .card .front,
+        .card .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        /* Front of the card (hidden initially) */
+        .card .front {
+            background-color: #2980b9;
+            color: white;
+            transform: rotateY(0deg);
+        }
+
+        /* Back of the card (shown initially) */
+        .card .back {
+            background-color: #3498db;
+            transform: rotateY(180deg);
+        }
+
+        /* Flipped card shows the front */
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* Match Animation */
+        .card.matched {
+            background-color: #27ae60 !important;
+            color: white;
+            transform: scale(1.1);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* Stats Container */
+        .stats-container {
+            flex: 1;
+            padding-left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-container p {
+            font-size: 18px;
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .stats-container p span {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+
+        /* Player Turn Indicator */
+        .player-turn {
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .player1-turn {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .player2-turn {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        /* Player Info Styling */
+        .player-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .player-info .player-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .player-info .player-score {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .game-container {
+                grid-template-columns: repeat(4, 80px);
+                grid-gap: 8px;
+            }
+
+            .card {
+                width: 80px;
+                height: 80px;
+                font-size: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .game-container {
+                grid-template-columns: repeat(3, 70px);
+                grid-gap: 6px;
+            }
+
+            .card {
+                width: 70px;
+                height: 70px;
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Memory Matching Game</h1>
+
+    <div class="main-container">
+        <!-- Buttons Section -->
+        <div class="buttons-container">
+            <button onclick="setDifficulty('easy')">Easy</button>
+            <button onclick="setDifficulty('medium')">Medium</button>
+            <button onclick="setDifficulty('hard')">Hard</button>
+            <button onclick="setTheme('letters')">Letters</button>
+            <button onclick="setTheme('emojis')">Emojis</button>
+            <button onclick="setTheme('shapes')">Shapes</button>
+            <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+            <button id="restart-game" onclick="restartGame()">Restart Game</button>
+        </div>
+
+        <!-- Game Cards Section -->
+        <div class="game-container" id="game-container">
+            <!-- Cards will be dynamically inserted here -->
+        </div>
+
+        <!-- Stats Section -->
+        <div class="stats-container" id="game-stats">
+            <div id="player-turn" class="player-turn player1-turn"><span id="current-player-name">Player 1</span>'s Turn</div>
+            <div class="player-info">
+                <div class="player-name"><span id="player1-name">Player 1</span> Score: <span id="player1-score" class="player-score">0</span></div>
+                <div class="player-name"><span id="player2-name">Player 2</span> Score: <span id="player2-score" class="player-score">0</span></div>
+            </div>
+            <p>Attempts: <span id="attempts">0</span></p>
+                <p>Time: <span id="timer">0</span> seconds</p>
+                <p>Best Score: <span id="best-attempts">N/A</span> attempts in <span id="best-time">N/A</span> seconds</p>
+            </div>
+        </div>
+    
+        <script>
+            const themes = {
+                letters: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
+                emojis: ['😀', '😂', '😎', '😍', '😜', '😇', '🤩', '😡'],
+                shapes: ['◼️', '◻️', '▲', '△', '⚫', '⚪', '⬤', '✦']
+            };
+            
+    
+            let cardValues = [...themes.letters];  // Default to letters
+            let cards = [];
+            let firstCard = null;
+            let secondCard = null;
+            let attempts = 0;
+            let matches = 0;
+            let startTime = null;
+            let timerInterval = null;
+            let currentPlayer = 1;
+            let playerScores = { 1: 0, 2: 0 };
+            let player1Name = "Player 1";
+            let player2Name = "Player 2";
+    
+            // Ask for Player Names
+            function askForPlayerNames() {
+                player1Name = prompt("Enter the name for Player 1:", "Player 1") || "Player 1";
+                player2Name = prompt("Enter the name for Player 2:", "Player 2") || "Player 2";
+    
+                document.getElementById('player1-name').textContent = player1Name;
+                document.getElementById('player2-name').textContent = player2Name;
+                updatePlayerTurn(); // Update the player turn indicator
+            }
+    
+            function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+    
+            function createBoard() {
+                const gameContainer = document.getElementById('game-container');
+                const cardSet = [...cardValues, ...cardValues];  // Duplicating the cards for matching pairs
+                shuffle(cardSet);
+    
+                gameContainer.innerHTML = '';
+                cards = [];
+    
+                cardSet.forEach((value) => {
+                    const card = document.createElement('div');
+                    card.classList.add('card');
+                    card.dataset.value = value;
+    
+                    const frontFace = document.createElement('div');
+                    frontFace.classList.add('front');
+                    const backFace = document.createElement('div');
+                    backFace.classList.add('back');
+    
+                    card.appendChild(frontFace);
+                    card.appendChild(backFace);
+    
+                    card.addEventListener('click', () => flipCard(card));
+                    gameContainer.appendChild(card);
+                    cards.push(card);
+                });
+            }
+    
+            function flipCard(card) {
+                if (card.classList.contains('flipped') || card.classList.contains('matched') || secondCard) {
+                    return;
+                }
+    
+                // Flip the card
+                card.classList.add('flipped');
+                card.querySelector('.front').textContent = card.dataset.value;
+    
+                if (!firstCard) {
+                    firstCard = card;
+                } else {
+                    secondCard = card;
+                    attempts++;
+                    document.getElementById('attempts').textContent = attempts;
+                    checkMatch();
+                }
+            }
+    
+            function checkMatch() {
+                if (firstCard.dataset.value === secondCard.dataset.value) {
+                    // Add matched class to both cards
+                    firstCard.classList.add('matched');
+                    secondCard.classList.add('matched');
+                    matches++;
+                    playerScores[currentPlayer]++;
+                    document.getElementById(`player${currentPlayer}-score`).textContent = playerScores[currentPlayer];
+                    checkWin();
+                    resetSelection();
+                } else {
+                    setTimeout(() => {
+                        firstCard.classList.remove('flipped');
+                        secondCard.classList.remove('flipped');
+                        firstCard.querySelector('.front').textContent = '';
+                        secondCard.querySelector('.front').textContent = '';
+                        switchPlayer();
+                        resetSelection();
+                    }, 1000);
+                }
+            }
+    
+            function resetSelection() {
+                firstCard = null;
+                secondCard = null;
+            }
+    
+            function startTimer() {
+                startTime = Date.now();
+                timerInterval = setInterval(() => {
+                    const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+                    document.getElementById('timer').textContent = elapsedTime;
+                }, 1000);
+            }
+    
+            function setDifficulty(level) {
+                let values;
+                if (level === 'easy') {
+                    values = ['A', 'B', 'C', 'D'];  // 4 pairs
+                } else if (level === 'medium') {
+                    values = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];  // 8 pairs
+                } else if (level === 'hard') {
+                    values = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];  // 12 pairs
+                }
+                cardValues.length = 0;  // Clear the array
+                cardValues.push(...values);  // Set new difficulty level
+                restartGame();
+            }
+    
+            function setTheme(theme) {
+                cardValues = [...themes[theme]];
+                restartGame();
+            }
+    
+            function restartGame() {
+                clearInterval(timerInterval);
+                attempts = 0;
+                matches = 0;
+                currentPlayer = 1;
+                playerScores = { 1: 0, 2: 0 };
+                document.getElementById('attempts').textContent = attempts;
+                document.getElementById('timer').textContent = 0;
+                document.getElementById('player1-score').textContent = 0;
+                document.getElementById('player2-score').textContent = 0;
+                updatePlayerTurn();
+                createBoard();
+                startTimer();
+            }
+    
+            function switchPlayer() {
+                currentPlayer = currentPlayer === 1 ? 2 : 1;
+                updatePlayerTurn();
+            }
+    
+            function updatePlayerTurn() {
+                const playerTurnElement = document.getElementById('player-turn');
+                const currentPlayerNameElement = document.getElementById('current-player-name');
+                
+                if (currentPlayer === 1) {
+                    playerTurnElement.classList.remove('player2-turn');
+                    playerTurnElement.classList.add('player1-turn');
+                    currentPlayerNameElement.textContent = player1Name;
+                } else {
+                    playerTurnElement.classList.remove('player1-turn');
+                    playerTurnElement.classList.add('player2-turn');
+                    currentPlayerNameElement.textContent = player2Name;
+                }
+            }
+
+            function toggleDarkMode() {
+                document.body.classList.toggle('dark-mode');
+            }            
+    
+            function checkWin() {
+                if (matches === cardValues.length) {
+                    clearInterval(timerInterval);
+                    const elapsedTime = document.getElementById('timer').textContent;
+                    setTimeout(() => {
+                        if (confirm(`${currentPlayer === 1 ? player1Name : player2Name} won! Total attempts: ${attempts}, Time: ${elapsedTime} seconds. Play again?`)) {
+                            restartGame();
+                        }
+                    }, 500);
+                }
+            }
+    
+            window.onload = function () {
+                askForPlayerNames(); // Ask for player names when the game starts
+                restartGame(); // Start the first game
+            };
+        </script>
+    
+    </body>
+    
+    </html>
+    
