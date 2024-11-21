@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>QR Code Generator</h1>
+    <form id="qrForm">
+        <label for="url">Enter URL:</label>
+        <input type="url" id="url" name="url" placeholder="https://example.com" required>
+        <button type="submit">Generate QR Code</button>
+    </form>
+    <div id="result">
+        <img id="qrImage" alt="Generated QR Code" style="display: none;">
+        <a id="downloadLink" style="display: none;">Download QR Code</a>
+    </div>
+
+    <script>
+        // JavaScript to handle QR Code generation
+        document.getElementById('qrForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const urlInput = document.getElementById('url').value;
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: urlInput }),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert(error.error || 'Failed to generate QR code');
+                    return;
+                }
+
+                const blob = await response.blob();
+                const qrImageUrl = URL.createObjectURL(blob);
+
+                // Display the QR code
+                const qrImage = document.getElementById('qrImage');
+                const downloadLink = document.getElementById('downloadLink');
+
+                qrImage.src = qrImageUrl;
+                qrImage.style.display = 'block';
+
+                downloadLink.href = qrImageUrl;
+                downloadLink.download = 'qrcode.png';
+                downloadLink.textContent = 'Download QR Code';
+                downloadLink.style.display = 'block';
+            } catch (error) {
+                console.error('Error generating QR code:', error);
+                alert('An unexpected error occurred.');
+            }
+        });
+    </script>
+</body>
+</html>
